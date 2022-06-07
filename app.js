@@ -15,13 +15,15 @@ mongoose.connect(`mongodb://localhost:27017/${db}`, { useNewUrlParser: true, fam
   .then(() => app.listen(PORT, () => { console.log(`Connected to ${db} & listening on port ${PORT}`); }))
   .catch((err) => console.log(err));
 
-// !!! 629c65f3d4dd32f45a0ced42
-
-// USE
+// MIDDLEWARE
 app.use((req, res, next) => {
   req.user = { _id: '629c65f3d4dd32f45a0ced42' };
   next();
 });
+
+// BODY PARSER
 app.use(bodyParser.json());
+
+// ROUTE
 app.use('/', require('./routes/users'));
 app.use('/', require('./routes/cards'));

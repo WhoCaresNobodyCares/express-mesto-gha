@@ -1,7 +1,7 @@
 // REQUIRE
 const mongoose = require('mongoose');
 
-// SCHEMAS
+// SCHEMA
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -33,7 +33,7 @@ const cardSchema = new mongoose.Schema({
     required: true,
   },
   owner: {
-    type: String, // !!!
+    type: String,
     required: true,
   },
   likes: {
@@ -46,7 +46,7 @@ const cardSchema = new mongoose.Schema({
   },
 });
 
-// MODELS
+// MODEL
 const User = mongoose.model('user', userSchema);
 const Card = mongoose.model('card', cardSchema);
 

@@ -1,11 +1,19 @@
 // REQUIRE
 const router = require('express').Router();
-const { returnAllUsers, returnUserById, createUser } = require('../controllers/users');
+const {
+  returnAllUsers,
+  createUser,
+  returnUserById,
+  refreshUserInfo,
+  refreshUserAvatar,
+} = require('../controllers/users');
 
-// ROUTES
+// ROUTE
 router.get('/users', returnAllUsers);
-router.get('/users/:userId', returnUserById);
 router.post('/users', createUser);
+router.get('/users/:userId', returnUserById);
+router.patch('/users/me', refreshUserInfo);
+router.patch('/users/me/avatar', refreshUserAvatar);
 
-// EXPORTS
+// EXPORT
 module.exports = router;

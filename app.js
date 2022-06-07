@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   if (req.originalUrl !== '/users' || req.originalUrl !== '/cards') {
-    app.patch(req.originalUrl, (req, res) => {
+    app.patch(req.originalUrl, () => {
       res.status(404).send({ message: 'Path not found' });
     });
   }

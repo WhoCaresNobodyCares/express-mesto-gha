@@ -3,16 +3,15 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 
-// PORT & DB
+// PORT
 const { PORT = 3000 } = process.env;
-const db = 'mestodb';
 
 // EXPRESS
 const app = express();
 
 // MONGOOSE & LISTENER
-mongoose.connect(`mongodb://localhost:27017/${db}`, { useNewUrlParser: true, family: 4 })
-  .then(() => app.listen(PORT, () => { console.log(`Connected to ${db} & listening on port ${PORT}`); }))
+mongoose.connect('mongodb://localhost:27017/mestodb', { useNewUrlParser: true, family: 4 })
+  .then(() => app.listen(PORT, () => { console.log(`Connected to mestodb & listening on port ${PORT}`); }))
   .catch((err) => console.log(err));
 
 // MIDDLEWARE

@@ -20,6 +20,15 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  if (req.originalUrl !== '/users' || req.originalUrl !== '/cards') {
+    app.patch(req.originalUrl, (req, res) => {
+      res.status(404).send({ message: 'Path not found' });
+    });
+  }
+  next();
+});
+
 // BODY PARSER
 app.use(bodyParser.json());
 

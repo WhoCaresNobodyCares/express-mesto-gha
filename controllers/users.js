@@ -41,7 +41,7 @@ const returnUserById = (req, res) => {
 
 const refreshUserInfo = (req, res) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true, new: true })
     .then((user) => res.send(user))
     .catch((err) => { if (err.name === 'ValidationError') { throw new ValidationError('ValidationError'); } })
     .catch((err) => { handleCustomError(err, res); });
@@ -49,7 +49,7 @@ const refreshUserInfo = (req, res) => {
 
 const refreshUserAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true })
+  User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true, new: true })
     .then((user) => res.send(user))
     .catch((err) => { if (err.name === 'ValidationError') { throw new ValidationError('ValidationError'); } })
     .catch((err) => { handleCustomError(err, res); });

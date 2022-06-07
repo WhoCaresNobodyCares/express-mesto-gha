@@ -26,8 +26,6 @@ const createCard = (req, res) => {
     .catch((err) => { handleCustomError(err, res); });
 };
 
-// *** ---
-
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {

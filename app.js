@@ -10,9 +10,20 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 // MONGOOSE & LISTENER
-mongoose.connect('mongodb://localhost:27017/mestodb', { useNewUrlParser: true, family: 4 })
-  .then(() => app.listen(PORT, () => { console.log(`Connected to mestodb & listening on port ${PORT}`); }))
+mongoose
+  .connect('mongodb://localhost:27017/mestodb', {
+    useNewUrlParser: true,
+    family: 4,
+  })
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Connected to mestodb & listening on port ${PORT}`);
+    });
+  })
   .catch((err) => console.log(err));
+
+// BODY PARSER
+app.use(bodyParser.json());
 
 // MIDDLEWARE
 app.use((req, res, next) => {
@@ -20,18 +31,20 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use((req, res, next) => {
-  if (req.originalUrl !== '/users' || req.originalUrl !== '/cards') {
-    app.patch(req.originalUrl, () => {
-      res.status(404).send({ message: 'Path not found' });
-    });
-  }
-  next();
-});
-
-// BODY PARSER
-app.use(bodyParser.json());
+// app.use((req, res, next) => {
+//   if (req.originalUrl !== '/users' || req.originalUrl !== '/cards') {
+//     app.patch(req.originalUrl, () => {
+//       res.status(404).send({ message: 'Path not found' });
+//     });
+//   }
+//   next();
+// });
 
 // ROUTE
-app.use('/', require('./routes/users'));
-app.use('/', require('./routes/cards'));
+app.use('/users', require('./routes/users'));
+app.use('/cards', require('./routes/cards'));
+
+// 404
+app.use((req, res) => {
+  res.status(404).send({ message: 'Path not found' });
+});

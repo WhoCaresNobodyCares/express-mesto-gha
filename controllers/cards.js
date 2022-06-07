@@ -1,6 +1,11 @@
 // REQUIRE
 const { Card } = require('../models/models');
-const { ValidationError, NotFoundError, CastError } = require('../errors/errors');
+const {
+  ValidationError,
+  NotFoundError,
+  CastError,
+  ServerError,
+} = require('../errors/errors');
 
 // HANDLER
 const handleDefaultError = (err, res) => {
@@ -15,28 +20,46 @@ const handleCustomError = (err, res) => {
 const returnAllCards = (req, res) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch((err) => { handleDefaultError(err, res); });
+    .catch((err) => {
+      handleDefaultError(err, res);
+    });
 };
 
 const createCard = (req, res) => {
   const { name, link, owner = req.user._id } = req.body;
   Card.create({ name, link, owner })
     .then((card) => res.send(card))
-    .catch((err) => { if (err.name === 'ValidationError') { throw new ValidationError('Validation error'); } })
-    .catch((err) => { handleCustomError(err, res); });
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new ValidationError('Validation error');
+      }
+      throw new ServerError('Server error');
+    })
+    .catch((err) => {
+      handleCustomError(err, res);
+    });
 };
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      if (!card) { throw new NotFoundError(); }
+      if (!card) {
+        throw new NotFoundError();
+      }
       res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') { throw new CastError('Cast error'); }
-      if (err.name === 'NotFoundError') { throw new NotFoundError('Card not found'); }
+      if (err.name === 'CastError') {
+        throw new CastError('Cast error');
+      }
+      if (err.name === 'NotFoundError') {
+        throw new NotFoundError('Card not found');
+      }
+      throw new ServerError('Server error');
     })
-    .catch((err) => { handleCustomError(err, res); });
+    .catch((err) => {
+      handleCustomError(err, res);
+    });
 };
 
 const putLike = (req, res) => {
@@ -46,14 +69,23 @@ const putLike = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      if (!card) { throw new NotFoundError(); }
+      if (!card) {
+        throw new NotFoundError();
+      }
       res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') { throw new CastError('Cast error'); }
-      if (err.name === 'NotFoundError') { throw new NotFoundError('Card not found'); }
+      if (err.name === 'CastError') {
+        throw new CastError('Cast error');
+      }
+      if (err.name === 'NotFoundError') {
+        throw new NotFoundError('Card not found');
+      }
+      throw new ServerError('Server error');
     })
-    .catch((err) => { handleCustomError(err, res); });
+    .catch((err) => {
+      handleCustomError(err, res);
+    });
 };
 
 const removeLike = (req, res) => {
@@ -63,14 +95,23 @@ const removeLike = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      if (!card) { throw new NotFoundError(); }
+      if (!card) {
+        throw new NotFoundError();
+      }
       res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') { throw new CastError('Cast error'); }
-      if (err.name === 'NotFoundError') { throw new NotFoundError('Card not found'); }
+      if (err.name === 'CastError') {
+        throw new CastError('Cast error');
+      }
+      if (err.name === 'NotFoundError') {
+        throw new NotFoundError('Card not found');
+      }
+      throw new ServerError('Server error');
     })
-    .catch((err) => { handleCustomError(err, res); });
+    .catch((err) => {
+      handleCustomError(err, res);
+    });
 };
 
 // EXPORT

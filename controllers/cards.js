@@ -5,6 +5,7 @@ const {
   NotFoundError,
   CastError,
   ServerError,
+  UnauthorizedError,
 } = require('../errors/errors');
 
 // HANDLER
@@ -41,24 +42,30 @@ const createCard = (req, res) => {
 };
 
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => {
-      if (!card) {
-        throw new NotFoundError();
+  Card.findById(req.params.cardId)
+    .then((testCard) => {
+      if (testCard.owner.toString() !== req.user._id) {
+        throw new UnauthorizedError('Its not yours');
       }
-      res.send(card);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new CastError('Cast error');
-      }
-      if (err.name === 'NotFoundError') {
-        throw new NotFoundError('Card not found');
-      }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => {
-      handleCustomError(err, res);
+      Card.findByIdAndRemove(req.params.cardId)
+        .then((card) => {
+          if (!card) {
+            throw new NotFoundError();
+          }
+          res.send(card);
+        })
+        .catch((err) => {
+          if (err.name === 'CastError') {
+            throw new CastError('Cast error');
+          }
+          if (err.name === 'NotFoundError') {
+            throw new NotFoundError('Card not found');
+          }
+          throw new ServerError('Server error');
+        })
+        .catch((err) => {
+          handleCustomError(err, res);
+        });
     });
 };
 

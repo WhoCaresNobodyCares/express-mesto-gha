@@ -25,21 +25,6 @@ mongoose
 // BODY PARSER
 app.use(bodyParser.json());
 
-// MIDDLEWARE
-app.use((req, res, next) => {
-  req.user = { _id: '629c65f3d4dd32f45a0ced42' };
-  next();
-});
-
-// app.use((req, res, next) => {
-//   if (req.originalUrl !== '/users' || req.originalUrl !== '/cards') {
-//     app.patch(req.originalUrl, () => {
-//       res.status(404).send({ message: 'Path not found' });
-//     });
-//   }
-//   next();
-// });
-
 // ROUTE
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));

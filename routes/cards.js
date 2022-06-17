@@ -7,13 +7,14 @@ const {
   putLike,
   removeLike,
 } = require('../controllers/cards');
+const { auth } = require('../middlewares/auth');
 
 // ROUTE
-router.get('/', returnAllCards);
-router.post('/', createCard);
-router.delete('/:cardId', deleteCard);
-router.put('/:cardId/likes', putLike);
-router.delete('/:cardId/likes', removeLike);
+router.get('/', auth, returnAllCards);
+router.post('/', auth, createCard);
+router.delete('/:cardId', auth, deleteCard);
+router.put('/:cardId/likes', auth, putLike);
+router.delete('/:cardId/likes', auth, removeLike);
 
 // EXPORT
 module.exports = router;

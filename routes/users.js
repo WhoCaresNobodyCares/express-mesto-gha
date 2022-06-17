@@ -3,17 +3,23 @@ const router = require('express').Router();
 const {
   returnAllUsers,
   createUser,
+  login,
   returnUserById,
   refreshUserInfo,
   refreshUserAvatar,
+  getUserInfo,
 } = require('../controllers/users');
+const { auth } = require('../middlewares/auth');
 
 // ROUTE
-router.get('/', returnAllUsers);
-router.post('/', createUser);
-router.get('/:userId', returnUserById);
-router.patch('/me', refreshUserInfo);
-router.patch('/me/avatar', refreshUserAvatar);
+router.post('/signin', login);
+router.post('/signup', createUser);
+
+router.get('/', auth, returnAllUsers);
+router.get('/me', auth, getUserInfo);
+router.get('/:userId', auth, returnUserById);
+router.patch('/me', auth, refreshUserInfo);
+router.patch('/me/avatar', auth, refreshUserAvatar);
 
 // EXPORT
 module.exports = router;

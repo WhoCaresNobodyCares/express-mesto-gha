@@ -8,6 +8,14 @@ class ValidationError extends Error {
   }
 }
 
+class UnauthorizedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'UnauthorizedError';
+    this.statusCode = 401;
+  }
+}
+
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
@@ -34,6 +42,7 @@ class ServerError extends Error {
 
 module.exports = {
   ValidationError,
+  UnauthorizedError,
   NotFoundError,
   CastError,
   ServerError,

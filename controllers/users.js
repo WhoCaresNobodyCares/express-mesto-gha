@@ -1,202 +1,105 @@
-// REQUIRE
+/* eslint-disable object-curly-newline */
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models/models');
+const User = require('../models/models').userModel;
+const { ValidationError, NotFoundError, UnauthorizedError } = require('../errors/errors');
 
-const {
-  ValidationError,
-  UnauthorizedError,
-  NotFoundError,
-  CastError,
-  ServerError,
-} = require('../errors/errors');
+// ---
 
-// HANDLER
-const handleDefaultError = (err, res) => {
-  res.status(500).send({ message: err.message });
-};
-
-const handleCustomError = (err, res) => {
-  res.status(err.statusCode).send({ message: err.message });
-};
-
-// USER CONTROLLER
-
-const getUserInfo = (req, res) => {
-  User.findById(req.user._id)
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError();
-      }
-      res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new CastError('Cast error');
-      }
-      if (err.name === 'NotFoundError') {
-        throw new NotFoundError('User not found');
-      }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => {
-      handleCustomError(err, res);
-    });
-};
-
-const returnAllUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send(users))
+    .then((users) => res.status(200).send({ users }))
+    .catch((err) => next(err));
+};
+
+const getUserById = (req, res, next) => {
+  User.findById(req.params.userId)
+    .then((user) => {
+      if (!user) { throw new NotFoundError(); }
+      res.status(200).send({ user });
+    })
     .catch((err) => {
-      handleDefaultError(err, res);
-    });
+      if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
+      if (err.name === 'CastError') { throw new ValidationError('Users id doesnt pass validation'); }
+    })
+    .catch((err) => next(err));
 };
 
-const createUser = (req, res) => {
-  const {
-    name, about, avatar, email, password,
-  } = req.body;
+// ---
 
-  bcrypt.hash(password, 10)
-    .then((hash) => {
-      User.create({
-        name, about, avatar, email, password: hash,
+const signup = (req, res, next) => {
+  const { name, about, avatar, email, password } = req.body;
+
+  if (!email || !password) { next(new ValidationError('No email or password')); }
+
+  bcrypt.hash(password, 10).then((hash) => {
+    User.create({ name, about, avatar, email, password: hash })
+      .then((user) => res.status(201).send({ user }))
+      .catch((err) => {
+        if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
       })
-        .then((user) => {
-          res.send(user);
-        })
-        .catch((err) => {
-          if (err.name === 'ValidationError') {
-            throw new ValidationError('Validation error');
-          }
-          throw new ServerError('Server error');
-        })
-        .catch((err) => {
-          handleCustomError(err, res);
-        });
-    });
+      .catch((err) => next(err));
+  });
 };
 
-const login = (req, res) => {
+const signin = (req, res, next) => {
   const { email, password } = req.body;
+
+  if (!email || !password) { next(new ValidationError('No email or password')); }
 
   User.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError();
-      }
+      if (!user) { throw new NotFoundError(); }
       return bcrypt.compare(password, user.password).then((match) => ({ match, user }));
     })
     .then(({ match, user }) => {
-      if (!match) {
-        throw new UnauthorizedError();
-      }
-      const token = jwt.sign({ _id: user._id }, 'test-secret-key', { expiresIn: '7d' });
-      res.send(token);
+      if (!match) { throw new UnauthorizedError(); }
+      const token = jwt.sign({ id: user._id }, 'test-key', { expiresIn: '7d' });
+      res.status(200).send({ token });
     })
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        throw new NotFoundError('User not found');
-      }
-      if (err.name === 'UnauthorizedError') {
-        throw new UnauthorizedError('Wrong email or password ');
-      }
-      throw new ServerError('Server error');
+      if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
+      if (err.name === 'UnauthorizedError') { throw new UnauthorizedError('Wrong email or password'); }
     })
-    .catch((err) => {
-      handleCustomError(err, res);
-    });
+    .catch((err) => next(err));
 };
 
-const returnUserById = (req, res) => {
-  User.findById(req.params.userId)
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError();
-      }
-      res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new CastError('Cast error');
-      }
-      if (err.name === 'NotFoundError') {
-        throw new NotFoundError('User not found');
-      }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => {
-      handleCustomError(err, res);
-    });
-};
+// ---
 
-const refreshUserInfo = (req, res) => {
+const changeUserInfo = (req, res, next) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
-    { runValidators: true, new: true },
-  )
+
+  if (!name && !about) { next(new ValidationError('Insert name, about or both')); }
+
+  User.findByIdAndUpdate(req.user.id, { name, about }, { runValidators: true, new: true })
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError();
-      }
-      res.send(user);
+      if (!user) { throw new NotFoundError(); }
+      res.status(200).send({ user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new ValidationError('ValidationError');
-      }
-      if (err.name === 'NotFoundError') {
-        throw new NotFoundError('User not found');
-      }
-      if (err.name === 'CastError') {
-        throw new CastError('Cast error');
-      }
-      throw new ServerError('Server error');
+      if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
+      if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
     })
-    .catch((err) => {
-      handleCustomError(err, res);
-    });
+    .catch((err) => next(err));
 };
 
-const refreshUserAvatar = (req, res) => {
+const changeUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { runValidators: true, new: true },
-  )
+
+  if (!avatar) { next(new ValidationError('Insert avatar')); }
+
+  User.findByIdAndUpdate(req.user.id, { avatar }, { runValidators: true, new: true })
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError();
-      }
-      res.send(user);
+      if (!user) { throw new NotFoundError(); }
+      res.status(200).send({ user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new ValidationError('ValidationError');
-      }
-      if (err.name === 'NotFoundError') {
-        throw new NotFoundError('User not found');
-      }
-      if (err.name === 'CastError') {
-        throw new CastError('Cast error');
-      }
-      throw new ServerError('Server error');
+      if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
+      if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
     })
-    .catch((err) => {
-      handleCustomError(err, res);
-    });
+    .catch((err) => next(err));
 };
 
-// EXPORT
-module.exports = {
-  returnAllUsers,
-  createUser,
-  returnUserById,
-  refreshUserInfo,
-  refreshUserAvatar,
-  login,
-  getUserInfo,
-};
+// ---
+
+module.exports = { getUsers, getUserById, signup, signin, changeUserInfo, changeUserAvatar };

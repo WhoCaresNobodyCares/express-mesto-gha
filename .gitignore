@@ -8,6 +8,7 @@ node_modules
 
 # Optional npm cache directory
 .npm
+OUTDATED
 
 # Optional REPL history
 .DS_Store

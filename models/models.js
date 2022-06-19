@@ -1,8 +1,8 @@
-// REQUIRE
 const mongoose = require('mongoose');
 const validator = require('validator');
 
-// SCHEMA
+// ---
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -21,13 +21,18 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: true,
-    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    default:
+      'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    validate: { validator(email) { return validator.isEmail(email); } },
+    validate: {
+      validator(email) {
+        return validator.isEmail(email);
+      },
+    },
   },
   password: {
     type: String,
@@ -64,12 +69,9 @@ const cardSchema = new mongoose.Schema({
   },
 });
 
-// MODEL
-const User = mongoose.model('user', userSchema);
-const Card = mongoose.model('card', cardSchema);
+// ---
 
-// EXPORT
 module.exports = {
-  User,
-  Card,
+  userModel: mongoose.model('user', userSchema),
+  cardModel: mongoose.model('card', cardSchema),
 };

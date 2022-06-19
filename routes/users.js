@@ -1,25 +1,19 @@
-// REQUIRE
+/* eslint-disable object-curly-newline */
 const router = require('express').Router();
-const {
-  returnAllUsers,
-  createUser,
-  login,
-  returnUserById,
-  refreshUserInfo,
-  refreshUserAvatar,
-  getUserInfo,
-} = require('../controllers/users');
-const { auth } = require('../middlewares/auth');
+const { getUsers, getUserById, signup, signin, changeUserInfo, changeUserAvatar } = require('../controllers/users');
+const auth = require('../middlewares/auth');
 
-// ROUTE
-router.post('/signin', login);
-router.post('/signup', createUser);
+// ---
 
-router.get('/', auth, returnAllUsers);
-router.get('/me', auth, getUserInfo);
-router.get('/:userId', auth, returnUserById);
-router.patch('/me', auth, refreshUserInfo);
-router.patch('/me/avatar', auth, refreshUserAvatar);
+router.get('/', auth, getUsers);
+router.get('/:userId', auth, getUserById);
 
-// EXPORT
+router.post('/signup', signup);
+router.post('/signin', signin);
+
+router.patch('/me', auth, changeUserInfo);
+router.patch('/me/avatar', auth, changeUserAvatar);
+
+// ---
+
 module.exports = router;

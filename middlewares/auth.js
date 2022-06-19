@@ -1,25 +1,23 @@
 const jwt = require('jsonwebtoken');
 const { UnauthorizedError } = require('../errors/errors');
 
-const auth = (req, res, next) => {
-  const { authorization } = req.headers;
+// ---
 
-  if (!authorization) {
-    throw new UnauthorizedError('Empty authorization header');
-  }
+const auth = (req, res, next) => {
+  if (!req.headers.authorization) { next(new UnauthorizedError('Empty authorization token')); }
 
   let payload;
 
   try {
-    payload = jwt.verify(authorization, 'test-secret-key');
+    payload = jwt.verify(req.headers.authorization, 'test-key');
   } catch (err) {
-    throw new UnauthorizedError('Authorization header doesnt match');
+    next(new UnauthorizedError('Wrong authorization token'));
   }
 
   req.user = payload;
   next();
 };
 
-module.exports = {
-  auth,
-};
+// ---
+
+module.exports = auth;

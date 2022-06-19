@@ -43,9 +43,31 @@ const deleteCard = (req, res, next) => {
     .catch((err) => next(err));
 };
 
-const putLike = (req, res, next) => {}
+const putLike = (req, res, next) => {
+  Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user.id } }, { new: true })
+    .then((card) => {
+      if (!card) { throw new NotFoundError(); }
+      res.status(201).send({ card });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
+      if (err.name === 'NotFoundError') { throw new NotFoundError('This card doesnt exist'); }
+    })
+    .catch((err) => next(err));
+};
 
-const deleteLike = (req, res, next) => {}
+const deleteLike = (req, res, next) => {
+  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user.id } }, { new: true })
+    .then((card) => {
+      if (!card) { throw new NotFoundError(); }
+      res.status(201).send({ card });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
+      if (err.name === 'NotFoundError') { throw new NotFoundError('This card doesnt exist'); }
+    })
+    .catch((err) => next(err));
+};
 
 // ---
 

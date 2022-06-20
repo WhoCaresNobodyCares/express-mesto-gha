@@ -23,8 +23,26 @@ class NotFoundError extends Error {
   }
 }
 
+class ConflictError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ConflictError';
+    this.statusCode = 409;
+  }
+}
+
+class ServerError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ServerError';
+    this.statusCode = 500;
+  }
+}
+
 module.exports = {
   ValidationError,
   UnauthorizedError,
   NotFoundError,
+  ConflictError,
+  ServerError,
 };

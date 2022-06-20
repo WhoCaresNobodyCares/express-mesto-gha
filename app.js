@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const app = require('express')();
 const mongoose = require('mongoose');
 const parser = require('body-parser');
@@ -31,6 +32,6 @@ app.use('/cards', require('./routes/cards'));
 
 // ---
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   res.status(err.statusCode).send({ message: err.message });
 });

@@ -1,6 +1,6 @@
 /* eslint-disable object-curly-newline */
 const Card = require('../models/models').cardModel;
-const { ValidationError, NotFoundError, UnauthorizedError } = require('../errors/errors');
+const { ValidationError, NotFoundError, UnauthorizedError, ServerError } = require('../errors/errors');
 
 // ---
 
@@ -19,6 +19,7 @@ const createCard = (req, res, next) => {
     .then((card) => res.status(201).send({ card }))
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
+      throw new ServerError('Server error');
     })
     .catch((err) => next(err));
 };
@@ -39,6 +40,7 @@ const deleteCard = (req, res, next) => {
       if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
       if (err.name === 'UnauthorizedError') { throw new UnauthorizedError('Its not yours to delete'); }
       if (err.name === 'TypeError') { throw new NotFoundError('This card doesnt exist'); }
+      throw new ServerError('Server error');
     })
     .catch((err) => next(err));
 };
@@ -52,6 +54,7 @@ const putLike = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
       if (err.name === 'NotFoundError') { throw new NotFoundError('This card doesnt exist'); }
+      throw new ServerError('Server error');
     })
     .catch((err) => next(err));
 };
@@ -65,6 +68,7 @@ const deleteLike = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
       if (err.name === 'NotFoundError') { throw new NotFoundError('This card doesnt exist'); }
+      throw new ServerError('Server error');
     })
     .catch((err) => next(err));
 };

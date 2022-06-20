@@ -3,6 +3,7 @@
 const app = require('express')();
 const mongoose = require('mongoose');
 const parser = require('body-parser');
+const { errors } = require('celebrate');
 
 // ---
 
@@ -33,7 +34,8 @@ app.use('/', require('./routes/cards'));
 
 // ---
 
+app.use(errors());
+
 app.use((err, req, res, next) => {
-  if (err.message === 'Validation failed') { res.status(400).send({ message: 'Joi validation error' }); }
   res.status(err.statusCode).send({ message: err.message });
 });

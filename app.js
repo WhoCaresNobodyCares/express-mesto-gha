@@ -28,8 +28,8 @@ app.use(parser.json());
 
 // ---
 
-app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
+app.use('/', require('./routes/users'));
+app.use('/', require('./routes/cards'));
 
 // ---
 

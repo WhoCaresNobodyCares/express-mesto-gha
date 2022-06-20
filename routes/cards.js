@@ -5,13 +5,13 @@ const auth = require('../middlewares/auth');
 
 // --- get
 
-router.get('/', auth, getCards);
+router.get('/cards/', auth, getCards);
 
-router.post('/', auth, createCard);
-router.delete('/:cardId', auth, deleteCard);
+router.post('/cards/', auth, createCard);
+router.delete('/cards/:cardId', auth, deleteCard);
 
-router.put('/:cardId/likes', auth, putLike);
-router.delete('/:cardId/likes', auth, deleteLike);
+router.put('/cards/:cardId/likes', auth, putLike);
+router.delete('/cards/:cardId/likes', auth, deleteLike);
 
 // ---
 

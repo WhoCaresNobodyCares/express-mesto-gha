@@ -6,9 +6,9 @@ const auth = require('../middlewares/auth');
 
 // ---
 
-router.get('/', auth, getUsers);
-router.get('/me', auth, getUserInfo);
-router.get('/:userId', auth, getUserById);
+router.get('/users/', auth, getUsers);
+router.get('/users/me', auth, getUserInfo);
+router.get('/users/:userId', auth, getUserById);
 
 router.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -27,8 +27,8 @@ router.post('/signin', celebrate({
   }),
 }), signin);
 
-router.patch('/me', auth, changeUserInfo);
-router.patch('/me/avatar', auth, changeUserAvatar);
+router.patch('/users/me', auth, changeUserInfo);
+router.patch('/users/me/avatar', auth, changeUserAvatar);
 
 // ---
 

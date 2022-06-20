@@ -6,7 +6,7 @@ const { ValidationError, NotFoundError, UnauthorizedError, ServerError } = requi
 
 const getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.status(200).send({ cards }))
+    .then((cards) => res.status(200).send(cards))
     .catch((err) => next(err));
 };
 
@@ -16,7 +16,7 @@ const createCard = (req, res, next) => {
   if (!name || !link) { next(new ValidationError('No name or link')); }
 
   Card.create({ name, link, owner })
-    .then((card) => res.status(201).send({ card }))
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
       throw new ServerError('Server error');
@@ -31,7 +31,7 @@ const deleteCard = (req, res, next) => {
       Card.findByIdAndDelete(req.params.cardId)
         .then((card) => {
           if (!card) { throw new NotFoundError(); }
-          res.status(200).send({ card });
+          res.status(200).send(card);
         })
         .catch((err) => { if (err.name === 'NotFoundError') { throw new NotFoundError('This card doesnt exist'); } })
         .catch((err) => next(err));
@@ -49,7 +49,7 @@ const putLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user.id } }, { new: true })
     .then((card) => {
       if (!card) { throw new NotFoundError(); }
-      res.status(201).send({ card });
+      res.status(201).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
@@ -63,7 +63,7 @@ const deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user.id } }, { new: true })
     .then((card) => {
       if (!card) { throw new NotFoundError(); }
-      res.status(200).send({ card });
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }

@@ -8,7 +8,7 @@ const { ValidationError, NotFoundError, UnauthorizedError, ConflictError, Server
 
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.status(200).send({ users }))
+    .then((users) => res.status(200).send(users))
     .catch((err) => next(err));
 };
 
@@ -16,7 +16,7 @@ const getUserInfo = (req, res, next) => {
   User.findById(req.user.id)
     .then((user) => {
       if (!user) { throw new NotFoundError(); }
-      res.status(200).send({ user });
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
@@ -30,7 +30,7 @@ const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) { throw new NotFoundError(); }
-      res.status(200).send({ user });
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
@@ -49,7 +49,7 @@ const signup = (req, res, next) => {
 
   bcrypt.hash(password, 10).then((hash) => {
     User.create({ name, about, avatar, email, password: hash })
-      .then((user) => res.status(201).send({ user }))
+      .then((user) => res.status(201).send(user))
       .catch((err) => {
         if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
         if (err.name === 'MongoServerError') { throw new ConflictError('This user is already registered, please signin'); }
@@ -72,7 +72,7 @@ const signin = (req, res, next) => {
     .then(({ match, user }) => {
       if (!match) { throw new UnauthorizedError(); }
       const token = jwt.sign({ id: user._id }, 'test-key', { expiresIn: '7d' });
-      res.status(200).send({ token });
+      res.status(200).send(token);
     })
     .catch((err) => {
       if (err.name === 'UnauthorizedError') { throw new UnauthorizedError('Wrong email or password'); }
@@ -91,7 +91,7 @@ const changeUserInfo = (req, res, next) => {
   User.findByIdAndUpdate(req.user.id, { name, about }, { runValidators: true, new: true })
     .then((user) => {
       if (!user) { throw new NotFoundError(); }
-      res.status(200).send({ user });
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
@@ -109,7 +109,7 @@ const changeUserAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user.id, { avatar }, { runValidators: true, new: true })
     .then((user) => {
       if (!user) { throw new NotFoundError(); }
-      res.status(200).send({ user });
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }

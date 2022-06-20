@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 const app = require('express')();
 const mongoose = require('mongoose');
@@ -32,6 +33,6 @@ app.use('/cards', require('./routes/cards'));
 
 // ---
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   res.status(err.statusCode).send({ message: err.message });
 });

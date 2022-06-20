@@ -63,7 +63,7 @@ const deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user.id } }, { new: true })
     .then((card) => {
       if (!card) { throw new NotFoundError(); }
-      res.status(201).send({ card });
+      res.status(200).send({ card });
     })
     .catch((err) => {
       if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }

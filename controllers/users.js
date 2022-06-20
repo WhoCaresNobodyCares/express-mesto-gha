@@ -72,7 +72,7 @@ const signin = (req, res, next) => {
     .then(({ match, user }) => {
       if (!match) { throw new UnauthorizedError(); }
       const token = jwt.sign({ id: user._id }, 'test-key', { expiresIn: '7d' });
-      res.status(200).send(token);
+      res.status(200).send({ token });
     })
     .catch((err) => {
       if (err.name === 'UnauthorizedError') { throw new UnauthorizedError('Wrong email or password'); }

@@ -1,6 +1,9 @@
 /* eslint-disable object-curly-newline */
-const Card = require('../models/models').cardModel;
-const { ValidationError, NotFoundError, UnauthorizedError, ServerError } = require('../errors/errors');
+const Card = require('../models/card').cardModel;
+const ValidationError = require('../errors/ValidationError');
+const NotFoundError = require('../errors/NotFoundError');
+const ServerError = require('../errors/ServerError');
+const RightsViolationError = require('../errors/RightsViolationError');
 
 // ---
 
@@ -17,32 +20,33 @@ const createCard = (req, res, next) => {
 
   Card.create({ name, link, owner })
     .then((card) => res.status(201).send(card))
-    .catch((err) => {
-      if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+    .catch(() => next(new ServerError('Server error')));
 };
 
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((test) => {
-      if (test.owner.toString() !== req.user.id) { throw new UnauthorizedError(); }
+      if (!test) { throw new NotFoundError(); }
+      if (test.owner.toString() !== req.user.id) { throw new RightsViolationError(); }
       Card.findByIdAndDelete(req.params.cardId)
-        .then((card) => {
-          if (!card) { throw new NotFoundError(); }
-          res.status(200).send(card);
-        })
-        .catch((err) => { if (err.name === 'NotFoundError') { throw new NotFoundError('This card doesnt exist'); } })
-        .catch((err) => next(err));
+        .then((card) => res.status(200).send(card))
+        .catch(() => next(new ServerError('Server error')));
     })
     .catch((err) => {
-      if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
-      if (err.name === 'UnauthorizedError') { throw new UnauthorizedError('Its not yours to delete'); }
-      if (err.name === 'TypeError') { throw new NotFoundError('This card doesnt exist'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+      switch (err.name) {
+        case 'RightsViolationError':
+          next(new RightsViolationError('Its not yours to delete'));
+          break;
+        case 'TypeError':
+          next(new NotFoundError('This card doesnt exist'));
+          break;
+        case 'NotFoundError':
+          next(new NotFoundError('There is no such card'));
+          break;
+        default:
+          next(new ServerError('Server error'));
+      }
+    });
 };
 
 const putLike = (req, res, next) => {
@@ -52,11 +56,14 @@ const putLike = (req, res, next) => {
       res.status(201).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
-      if (err.name === 'NotFoundError') { throw new NotFoundError('This card doesnt exist'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+      switch (err.name) {
+        case 'NotFoundError':
+          next(new NotFoundError('This card doesnt exist'));
+          break;
+        default:
+          next(new ServerError('Server error'));
+      }
+    });
 };
 
 const deleteLike = (req, res, next) => {
@@ -66,11 +73,14 @@ const deleteLike = (req, res, next) => {
       res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') { throw new ValidationError('Invalid card id'); }
-      if (err.name === 'NotFoundError') { throw new NotFoundError('This card doesnt exist'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+      switch (err.name) {
+        case 'NotFoundError':
+          next(new NotFoundError('This card doesnt exist'));
+          break;
+        default:
+          next(new ServerError('Server error'));
+      }
+    });
 };
 
 // ---

@@ -1,8 +1,12 @@
 /* eslint-disable object-curly-newline */
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/models').userModel;
-const { ValidationError, NotFoundError, UnauthorizedError, ConflictError, ServerError } = require('../errors/errors');
+const User = require('../models/user').userModel;
+const ValidationError = require('../errors/ValidationError');
+const NotFoundError = require('../errors/NotFoundError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
+const ServerError = require('../errors/ServerError');
+const ConflictError = require('../errors/ConflictError');
 
 // ---
 
@@ -14,16 +18,8 @@ const getUsers = (req, res, next) => {
 
 const getUserInfo = (req, res, next) => {
   User.findById(req.user.id)
-    .then((user) => {
-      if (!user) { throw new NotFoundError(); }
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
-      if (err.name === 'CastError') { throw new ValidationError('Users id doesnt pass validation'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+    .then((user) => res.status(200).send(user))
+    .catch(() => next(new ServerError('Server error')));
 };
 
 const getUserById = (req, res, next) => {
@@ -33,11 +29,14 @@ const getUserById = (req, res, next) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
-      if (err.name === 'CastError') { throw new ValidationError('Users id doesnt pass validation'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+      switch (err.name) {
+        case 'NotFoundError':
+          next(new NotFoundError('User is not found'));
+          break;
+        default:
+          next(new ServerError('Server error'));
+      }
+    });
 };
 
 // ---
@@ -49,20 +48,21 @@ const signup = (req, res, next) => {
 
   bcrypt.hash(password, 10).then((hash) => {
     User.create({ name, about, avatar, email, password: hash })
-      .then((user) => res.status(201).send(user))
+      .then(() => res.status(201).send({ data: { name, about, avatar, email } }))
       .catch((err) => {
-        if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
-        if (err.name === 'MongoServerError') { throw new ConflictError('This user is already registered, please signin'); }
-        throw new ServerError('Server error');
-      })
-      .catch((err) => next(err));
+        switch (err.name) {
+          case 'MongoServerError':
+            next(new ConflictError('This user is already registered, please signin'));
+            break;
+          default:
+            next(new ServerError('Server error'));
+        }
+      });
   });
 };
 
 const signin = (req, res, next) => {
   const { email, password } = req.body;
-
-  if (!email || !password) { next(new ValidationError('No email or password')); }
 
   User.findOne({ email }).select('+password')
     .then((user) => {
@@ -75,10 +75,14 @@ const signin = (req, res, next) => {
       res.status(200).send({ token });
     })
     .catch((err) => {
-      if (err.name === 'UnauthorizedError') { throw new UnauthorizedError('Wrong email or password'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+      switch (err.name) {
+        case 'UnauthorizedError':
+          next(new UnauthorizedError('Wrong email or password'));
+          break;
+        default:
+          next(new ServerError('Server error'));
+      }
+    });
 };
 
 // ---
@@ -89,34 +93,16 @@ const changeUserInfo = (req, res, next) => {
   if (!name && !about) { next(new ValidationError('Insert name, about or both')); }
 
   User.findByIdAndUpdate(req.user.id, { name, about }, { runValidators: true, new: true })
-    .then((user) => {
-      if (!user) { throw new NotFoundError(); }
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
-      if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+    .then((user) => res.status(200).send(user))
+    .catch(() => next(new ServerError('Server error')));
 };
 
 const changeUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
-  if (!avatar) { next(new ValidationError('Insert avatar')); }
-
   User.findByIdAndUpdate(req.user.id, { avatar }, { runValidators: true, new: true })
-    .then((user) => {
-      if (!user) { throw new NotFoundError(); }
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') { throw new ValidationError('One of fields doesnt pass validation'); }
-      if (err.name === 'NotFoundError') { throw new NotFoundError('User is not found'); }
-      throw new ServerError('Server error');
-    })
-    .catch((err) => next(err));
+    .then((user) => res.status(200).send(user))
+    .catch(() => next(new ServerError('Server error')));
 };
 
 // ---

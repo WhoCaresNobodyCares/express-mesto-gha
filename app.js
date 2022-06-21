@@ -4,6 +4,7 @@ const app = require('express')();
 const mongoose = require('mongoose');
 const parser = require('body-parser');
 const { errors } = require('celebrate');
+const NotFoundError = require('./errors/NotFoundError');
 
 // ---
 
@@ -29,8 +30,9 @@ app.use(parser.json());
 
 // ---
 
-app.use('/', require('./routes/users'));
-app.use('/', require('./routes/cards'));
+app.use('/', require('./routes/auth'));
+app.use('/users', require('./routes/users'));
+app.use('/cards', require('./routes/cards'));
 
 // ---
 
@@ -38,6 +40,11 @@ app.use(errors());
 
 // ---
 
+app.use((req, res, next) => next(new NotFoundError('404 error')));
+
+// ---
+
 app.use((err, req, res, next) => {
+  if (!err.statusCode) { res.status(500).send({ message: 'Default server error' }); }
   res.status(err.statusCode).send({ message: err.message });
 });

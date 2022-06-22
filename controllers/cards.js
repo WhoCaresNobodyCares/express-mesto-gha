@@ -20,7 +20,15 @@ const createCard = (req, res, next) => {
 
   Card.create({ name, link, owner })
     .then((card) => res.status(201).send(card))
-    .catch(() => next(new ServerError('Server error')));
+    .catch((err) => {
+      switch (err.name) {
+        case 'ValidationError':
+          next(new ValidationError('Validation error'));
+          break;
+        default:
+          next(new ServerError('Server error'));
+      }
+    });
 };
 
 const deleteCard = (req, res, next) => {
@@ -36,9 +44,6 @@ const deleteCard = (req, res, next) => {
       switch (err.name) {
         case 'RightsViolationError':
           next(new RightsViolationError('Its not yours to delete'));
-          break;
-        case 'TypeError':
-          next(new NotFoundError('This card doesnt exist'));
           break;
         case 'NotFoundError':
           next(new NotFoundError('There is no such card'));

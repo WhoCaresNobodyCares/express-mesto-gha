@@ -44,21 +44,24 @@ const getUserById = (req, res, next) => {
 const signup = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
 
-  if (!email || !password) { next(new ValidationError('No email or password')); }
-
-  bcrypt.hash(password, 10).then((hash) => {
-    User.create({ name, about, avatar, email, password: hash })
-      .then(() => res.status(201).send({ data: { name, about, avatar, email } }))
-      .catch((err) => {
-        switch (err.name) {
-          case 'MongoServerError':
-            next(new ConflictError('This user is already registered, please signin'));
-            break;
-          default:
-            next(new ServerError('Server error'));
-        }
-      });
-  });
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({ name, about, avatar, email, password: hash })
+        .then(() => res.status(201).send({ data: { name, about, avatar, email } }))
+        .catch((err) => {
+          switch (err.name) {
+            case 'ValidationError':
+              next(new ValidationError('Validation error'));
+              break;
+            case 'MongoServerError':
+              next(new ConflictError('This user is already registered, please signin'));
+              break;
+            default:
+              next(new ServerError('Server error'));
+          }
+        });
+    })
+    .catch(() => next(new ServerError('Server error')));
 };
 
 const signin = (req, res, next) => {
@@ -94,7 +97,15 @@ const changeUserInfo = (req, res, next) => {
 
   User.findByIdAndUpdate(req.user.id, { name, about }, { runValidators: true, new: true })
     .then((user) => res.status(200).send(user))
-    .catch(() => next(new ServerError('Server error')));
+    .catch((err) => {
+      switch (err.name) {
+        case 'ValidationError':
+          next(new ValidationError('Validation error'));
+          break;
+        default:
+          next(new ServerError('Server error'));
+      }
+    });
 };
 
 const changeUserAvatar = (req, res, next) => {
@@ -102,7 +113,15 @@ const changeUserAvatar = (req, res, next) => {
 
   User.findByIdAndUpdate(req.user.id, { avatar }, { runValidators: true, new: true })
     .then((user) => res.status(200).send(user))
-    .catch(() => next(new ServerError('Server error')));
+    .catch((err) => {
+      switch (err.name) {
+        case 'ValidationError':
+          next(new ValidationError('Validation error'));
+          break;
+        default:
+          next(new ServerError('Server error'));
+      }
+    });
 };
 
 // ---

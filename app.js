@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const parser = require('body-parser');
 const { errors } = require('celebrate');
 const NotFoundError = require('./errors/NotFoundError');
+const auth = require('./middlewares/auth');
 
 // ---
 
@@ -31,6 +32,9 @@ app.use(parser.json());
 // ---
 
 app.use('/', require('./routes/auth'));
+
+app.use(auth);
+
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
